@@ -9,22 +9,39 @@ function Square({ handleClick, value }) {
 export default function Game() {
   const [xIsNext, setXIsNext] = useState(true);
   const [history, setHistory] = useState([Array(9).fill(null)]);
-  const currentSquares = history[history.length - 1];
+  const [currentSquares, setCurrentSquares] = useState(0);
+  const nextSquares = history[history.length - 1];
   function handlePlay(squaresArray) {
     setXIsNext(!xIsNext);
     setHistory([...history, squaresArray]);
   }
+  function jumpTo(index) {
+    setCurrentSquares(index);
+    setHistory(history[currentSquares]);
+  }
+
+  const moves = history.map((_, move) => {
+    let description = move > 0 ? `Go to move #${move}` : `Go to start`;
+    return (
+      <li key={move}>
+        <button className="timeTravel" onClick={(move) => jumpTo(move)}>
+          {description}
+        </button>
+      </li>
+    );
+  });
+
   return (
     <div className="game">
       <div className="game-board">
         <Board
           xIsNext={xIsNext}
-          squares={currentSquares}
+          squares={nextSquares}
           handlePlay={handlePlay}
         />
       </div>
       <div className="game-info">
-        <ol></ol>
+        <ol>{moves}</ol>
       </div>
     </div>
   );
