@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 function Square({ handleClick, value }) {
   return (
     <button className="square" onClick={handleClick}>
@@ -63,30 +64,18 @@ function Board({ xIsNext, squares, onPlay }) {
   } else {
     status = `Current player is ${xIsNext ? "X" : "O"}`;
   }
+
   const renderBoard = Array(9)
     .fill(null)
-    .map((squres, i) => {
-      let counter = -1; //because im dumb
-      let renderSquares = Array(3)
-        .fill(null)
-        .map((square) => {
-          i === 0 ? counter++ : (counter *= i);
-          console.log(counter);
-          return (
-            <Square
-              key={counter}
-              handleClick={() => handleClick(counter)}
-              value={squares[counter]}
-            />
-          );
-        });
-
-      return <div key={i}>{renderSquares}</div>;
+    .map((square, i) => {
+      return (
+        <Square key={i} handleClick={() => handleClick(i)} value={squares[i]} />
+      );
     });
   return (
     <div className="mainContainer">
       <h1>{status}</h1>
-      {renderBoard}
+      <div className="fuckMe">{renderBoard}</div>
     </div>
   );
 }
@@ -113,4 +102,7 @@ function isWinner(squares) {
     }
   });
   return winner;
+}
+function Container() {
+  return <></>;
 }
