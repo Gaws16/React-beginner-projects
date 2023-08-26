@@ -7,26 +7,25 @@ function Square({ handleClick, value }) {
   );
 }
 export default function Game() {
-  const [xIsNext, setXIsNext] = useState(true);
   const [history, setHistory] = useState([Array(9).fill(null)]);
-  const [currentSquares, setCurrentSquares] = useState(0);
-  const nextSquares = history[history.length - 1];
-  function handlePlay(squaresArray) {
-    setXIsNext(!xIsNext);
-    setHistory([...history, squaresArray]);
+  const [currentMove, setCurrentMove] = useState(0);
+  const currentSquares = history[currentMove];
+  const xIsNext = currentMove % 2 === 0;
+  function handlePlay(nextSquares) {
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
   }
-  function jumpTo(index) {
-    setCurrentSquares(index);
-    setHistory(history[currentSquares]);
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
   }
-
-  const moves = history.map((_, move) => {
-    let description = move > 0 ? `Go to move #${move}` : `Go to start`;
+  const moves = history.map((squres, move) => {
+    let description = move > 0 ? "Go to move #" + move : "Go to game start";
     return (
       <li key={move}>
-        <button className="timeTravel" onClick={(move) => jumpTo(move)}>
+        <h4 className="glow-on-hover" onClick={() => jumpTo(move)}>
           {description}
-        </button>
+        </h4>
       </li>
     );
   });
@@ -34,33 +33,29 @@ export default function Game() {
   return (
     <div className="game">
       <div className="game-board">
-        <Board
-          xIsNext={xIsNext}
-          squares={nextSquares}
-          handlePlay={handlePlay}
-        />
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
       </div>
       <div className="game-info">
-        <ol>{moves}</ol>
+        <ul style={{ listStyle: "none" }}>{moves}</ul>
       </div>
     </div>
   );
 }
-function Board({ xIsNext, squares, handlePlay }) {
+function Board({ xIsNext, squares, onPlay }) {
   let status = "";
 
   const winner = isWinner(squares);
   function handleClick(i) {
-    const currentSquares = squares.slice();
-    if (currentSquares[i] || winner) {
+    if (squares[i] || winner) {
       return;
     }
+    const currentSquares = squares.slice();
     if (xIsNext) {
       currentSquares[i] = "X";
     } else {
       currentSquares[i] = "O";
     }
-    handlePlay(currentSquares);
+    onPlay(currentSquares);
   }
 
   if (winner) {
@@ -68,24 +63,30 @@ function Board({ xIsNext, squares, handlePlay }) {
   } else {
     status = `Current player is ${xIsNext ? "X" : "O"}`;
   }
+  const renderBoard = Array(9)
+    .fill(null)
+    .map((squres, i) => {
+      let counter = -1; //because im dumb
+      let renderSquares = Array(3)
+        .fill(null)
+        .map((square) => {
+          i === 0 ? counter++ : (counter *= i);
+          console.log(counter);
+          return (
+            <Square
+              key={counter}
+              handleClick={() => handleClick(counter)}
+              value={squares[counter]}
+            />
+          );
+        });
+
+      return <div key={i}>{renderSquares}</div>;
+    });
   return (
     <div className="mainContainer">
       <h1>{status}</h1>
-      <div className="firstRow">
-        <Square handleClick={() => handleClick(0)} value={squares[0]} />
-        <Square handleClick={() => handleClick(1)} value={squares[1]} />
-        <Square handleClick={() => handleClick(2)} value={squares[2]} />
-      </div>
-      <div className="secondRow">
-        <Square handleClick={() => handleClick(3)} value={squares[3]} />
-        <Square handleClick={() => handleClick(4)} value={squares[4]} />
-        <Square handleClick={() => handleClick(5)} value={squares[5]} />
-      </div>
-      <div className="thirdRow">
-        <Square handleClick={() => handleClick(6)} value={squares[6]} />
-        <Square handleClick={() => handleClick(7)} value={squares[7]} />
-        <Square handleClick={() => handleClick(8)} value={squares[8]} />
-      </div>
+      {renderBoard}
     </div>
   );
 }
